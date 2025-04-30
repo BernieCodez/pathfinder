@@ -1,0 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
+body {
+    overflow-x: hidden;
+    display: flex;
+    font-family: "Fredoka", sans-serif;
+    padding: 0rem 30rem;
+    height: 100vh;
+    margin: 0;
+    background-color: #161616;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+
+}
+.invis{
+    visibility: visible;
+    position: relative;
+}
+h1 {
+    color: white;  
+    font-size: 7rem;
+    text-align: center;
+    margin: 3rem 1rem;
+    transition: all 1s ease;
+    position:absolute;
+}
+h1:hover {
+    color: white;  
+    font-size: 7.25rem;
+    text-align: center;
+    margin: 3rem 1rem;
+    transition: all 1s ease;
+    position:absolute;
+}
+p {
+    text-align: center;
+    font-size: 3rem;
+    color: rgb(155, 155, 155);
+    margin: 0.5rem 0.5rem;
+    transition: all 0.5s ease;
+
+}
+p:hover{
+    text-align: center;
+    color: white;
+    margin: 0.5rem 0.5rem;
+
+}
+.container {
+    box-sizing: border-box;
+    margin: 1rem 0.5rem;
+    padding: 0;
+    transform: scale(1);
+  }
+  .entryarea {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 1.25rem;
+    position: relative;
+  }
+  input {
+    outline: none;
+    font-size: 1.5rem;
+    padding: 1.5rem 0.625rem;
+    border-radius: 1rem;
+    border: 0.25rem solid rgb(155, 155, 155);
+    background: transparent;
+    transition: 0.5s ease;
+    width: 70%;
+    z-index: 10;
+  }
+  
+.message:focus,
+.message:valid {
+  z-index: 1;
+  color: white;
+  border: 0.25rem solid white;
+}
+
+.grid-container {
+    justify-content: center;
+    align-content: center; 
+
+    display: grid;
+    grid-template-columns: repeat(var(--columns, 5), 50px); /* default is 5 columns, each 50px wide */
+    grid-template-rows: repeat(var(--rows, 7), 50px);    /* default is 7 rows, each 50px high */
+    transform: scale(2.5);
+    width: 100%;
+    height: 100%;
+
+  }
+  
+  .grid-item {
+    border: 0.15rem solid rgb(155, 155, 155);
+    color:white;
+    font-size: 1.5rem;
+    box-sizing: border-box;             /* Include border in the element's total width and height */
+    margin: .5rem .5rem;
+    border-radius: .15rem;
+    text-align: center;
+  }
+
+  .player{
+    transition: all 0.5s ease;
+    width: 4rem;
+    height: 4rem;
+    position: absolute;
+    border: .4rem solid white;
+    box-sizing: border-box;  
+    margin: .5rem .5rem;
+    border-radius: 10rem;
+}
+.safe{
+  border-color:white;
+}
+.stand{
+  border-color:white;
+}

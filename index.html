@@ -1,20 +1,74 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Home</title>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <!--
-      Need a visual blank slate?
-      Remove all code in `styles.css`!
-    -->
-    <link rel="stylesheet" href="styles.css" />
-    <script type="module" src="script.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pathfinder</title>
+    <link id="theme-link" rel="stylesheet" href="style.css" />
   </head>
   <body>
-  <input type="text" id="size"><br>
-  <input type="submit" value="Submit" onclick="generate()">
+    <h1 class="invis"></h1>
+    <h1 class="type"></h1>
+    <p id="play" style="display: none;" onclick="window.location.href='playable.html'">Play</p>
+    <p id="help" style="display: none;" onclick="window.location.href='index.html'">Help</p>
+    <p id="settings" style="display: none;" onclick="window.location.href='game.html'">Settings</p>
+
+    <script>
+        //ANIMATIONS//
+        const textElement = document.querySelector(".type");
+        
+        const play = document.getElementById('play');
+        const help = document.getElementById('help');
+        const settings = document.getElementById('settings');
+
+        function Type(element, text, time, i=0){
+            
+            element.textContent += text[i];
+            if(i===text.length-1){
+                return;
+            }
+            setTimeout(() => Type(element, text, time, i+1), time);
+            
+
+        }
+        setTimeout(() => Type(textElement, "Pathfinder", 100), 500);
 
 
+        function fadeIn(element, duration) {
+            element.style.opacity = 0;
+            element.style.display = "block";
+            let startTime = null;
+
+            function animation(currentTime) {
+                if (!startTime) {
+                startTime = currentTime;
+                }
+
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(timeElapsed / duration, 1); 
+                element.style.opacity = progress;
+
+                if (timeElapsed < duration) {
+                requestAnimationFrame(animation);
+                }
+            }
+            requestAnimationFrame(animation);
+        }
+        setTimeout(() => 
+        textElement.style.transform = 'translateY(-10rem)'
+        , 1750);
+
+
+        setTimeout(() => fadeIn(play, 1000), 1750);
+        setTimeout(() => fadeIn(help, 1000), 2000);
+        setTimeout(() => fadeIn(settings, 1000), 2250);
+            
+            
+
+        //ANIMATIONS//
+        
+
+    </script>
   </body>
 </html>
