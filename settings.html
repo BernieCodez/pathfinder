@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pathfinder</title>
+    <link id="theme-link" rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- <h1 class="type">Pathfinder</h1> -->
+     <div id = "challenge-notifier" class = "challenge-notifier"> 
+      <h3>Challenge Active</h3>
+      <h4 id = "challenge-name">text</h4>
+     </div>
+    <div class="dropdown-container">
+      <p>Map Type: </p>
+      <select class="selector" id="map-selector">
+        <option value="gen">Generated</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+    
+    <div class="dropdown-container">
+      <p>Difficulty: </p>
+      <select class="selector" id="difficulty-selector">
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+        <option value="impossible">Impossible</option>
+      </select>
+    </div>
+
+    <div id="custom">
+      <p class="clickable" onclick="window.location.href='create.html'">Create your custom map by clicking HERE!</p>
+      <p>Upload custom map:</p>
+      <div class="container">
+          <div class="entryarea">
+            <input
+              class="message"
+              id="uploadMap"
+              type="text"
+              autocomplete="off"
+              required
+            />
+          </div>
+        </div>
+    </div>
+    
+    
+    <div id = "generated">
+      
+  
+      <p>Choose your map size:</p>
+      <div class="container">
+          <div class="entryarea">
+            <input
+              class="message"
+              id="columns"
+              type="number"
+              autocomplete="off"
+              maxlength="10"
+              required
+            />
+            <!-- change max length if the game can't handle massive grids. -->
+          </div>
+        </div>
+    </div>
+    
+
+      <button id="challengesBtn" class="glow-button" onclick="window.location.href='challenges.html'">
+        Challenges
+      </button>
+
+      <p class="clickable" onclick="window.location.href = 'index.html'">Back</p>
+
+    <script>
+        const challenge = localStorage.getItem("challenge") || 0;
+
+        const sizeInput = document.getElementById('columns');
+
+        // const textElement = document.querySelector(".type");
+        // textElement.style.transform = 'translateY(-10rem)';
+
+
+        //check if diffulty dropdown has a changed value
+        //if it does then it stores it in local storage
+        const challengeText = document.getElementById("challenge-name")
+        const difficultyDropdown = document.getElementById("difficulty-selector");
+        if(challenge == 0){
+          difficultyDropdown.value = localStorage.getItem("difficulty") || "easy";
+          difficultyDropdown.disabled = false;
+
+          sizeInput.value = localStorage.getItem("columns") || 5;
+          sizeInput.disabled = false;
+
+          //restores previous values.
+        }else{
+          challengeText.textContent = localStorage.getItem("challenge-name");
+        }
+
+
+
+
+        const mapSelector = document.getElementById("map-selector");
+        //restores previous values.
+        const customy = document.getElementById("custom");
+        const generatedy = document.getElementById("generated");
+
+
+        function uploadMode(){
+
+          const selectedValue = localStorage.getItem("mode") || "gen"
+          mapSelector.value = selectedValue;
+          if(selectedValue == "custom"){
+            customy.style.display = "block";
+            generatedy.style.display = "none";
+
+          }else if(selectedValue == "gen"){
+            customy.style.display = "none";
+            generatedy.style.display = "block";
+          }
+        }
+        uploadMode();
+
+        const uploadMap = document.getElementById("uploadMap");
+        uploadMap.addEventListener("input", function(event){
+          localStorage.setItem("map", event.target.value);
+          //alert(localStorage.getItem("map"));
+        });
+
+        
+        mapSelector.addEventListener("change", function() {
+          const selectedValue = mapSelector.value;
+          localStorage.setItem("mode", selectedValue);
+          if(selectedValue == "custom"){
+            customy.style.display = "block";
+            generatedy.style.display = "none";
+
+          }else if(selectedValue == "gen"){
+            customy.style.display = "none";
+            generatedy.style.display = "block";
+          }
+        });
+
+
+        difficultyDropdown.addEventListener("change", function() {
+          const selectedValue = difficultyDropdown.value;
+
+          localStorage.setItem("difficulty", selectedValue);
+        });
+
+
+        //check if a new grid size has been entered
+        //if so change local storage
+
+        sizeInput.addEventListener('input', function(event) {
+          localStorage.setItem("columns", event.target.value);
+          localStorage.setItem("rows", Number(event.target.value) + 2);
+          
+        });
+
+
+
+
+
+        //parsing the challenges JSON file
+        async function readJson(file_path) {
+        try {
+            const response = await fetch(file_path);
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error("Error reading JSON file:", error);
+        }
+        }
+        readJson('./challenges.json')
+        .then(data => {
+            const challenges =data;
+            console.log(challenges);
+            changeInputs(challenges);
+        });
+
+
+        function changeInputs(data){
+          const requirements = data.challenges[challenge-1]["requirements"];
+
+          const keys = Object.keys(requirements);
+          
+          const rLength = keys.length
+
+          console.log(requirements)
+
+          for(let i=0; i<rLength; i++){
+            console.log(requirements[keys[i]]); 
+            console.log(keys[i]); 
+
+            if(keys[i]=="size"){
+              //size
+              sizeInput.value = requirements[keys[i]];
+              localStorage.setItem("columns",Number(requirements[keys[i]]));
+              localStorage.setItem("rows",Number(requirements[keys[i]])+2);
+
+              sizeInput.disabled = true;
+
+            }else if(keys[i]=="difficulty"){
+              //difficulty
+              difficultyDropdown.value = requirements[keys[i]]
+              localStorage.setItem("difficulty",requirements[keys[i]]);
+
+              difficultyDropdown.disabled = true;
+
+            }else if(keys[i]=="map"){
+              //map
+              localStorage.setItem("mode",requirements[keys[i]]);
+              uploadMode();
+              mapSelector.disabled = true;
+              
+
+            }
+             
+          }
+        }
+
+        // if(challenge == 1){
+        //   sizeInput.value = 7;
+        //   sizeInput.disabled = true;
+        // }else if(challenge == 2){
+        //   //impossible difficulty
+        //   //size 5
+        //   sizeInput.value = 5;
+        //   sizeInput.disabled = true;
+
+        //   difficultyDropdown.value = "impossible";
+        //   difficultyDropdown.disabled = true;
+        //   mapSelector.value = "gen";
+        //   mapSelector.disabled = true;
+        // }
+    </script>
+  </body>
+</html>

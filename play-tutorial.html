@@ -1,0 +1,404 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pathfinder</title>
+    <link id="theme-link" rel="stylesheet" href="style.css" />
+    <style>
+        body{
+            overflow-y: hidden;
+
+        }
+
+    </style>
+  </head>
+  <body>
+    <p id = "pause-text" class = "clickable">Pause</p>
+    <div class = tool-bar>
+        <p id = "">Welcome to Pathfinder! This is quick guide for playing the game.</p>
+        <p class="next" id = "next">Next</p>
+    </div>
+    
+    <div class = "menu" id = "menu">
+        <h2 id = "menu-text">Game Paused</h2>
+        <p id = "resume" class = "clickable">Resume</p>
+        <p id = "restart" class = "clickable" onclick="window.location.href='play.html'">Restart</p>
+        <p id = "menuBtn" class = "clickable" onclick="window.location.href='index.html'">Menu</p>
+        
+    </div>
+    <div class="grid-container" id="myGrid">
+    <script>
+        
+
+        //ANIMATIONS FOR THE GRID//
+        function fadeIn(element, duration) {
+            element.style.opacity = 0;
+            element.style.display = "block";
+            let startTime = null;
+
+            function animation(currentTime) {
+                if (!startTime) {
+                startTime = currentTime;
+                }
+
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(timeElapsed / duration, 1); 
+                element.style.opacity = progress;
+
+                if (timeElapsed < duration) {
+                requestAnimationFrame(animation);
+                }
+            }
+            requestAnimationFrame(animation);
+        }
+        //ANIMATIONS FOR THE GRID//
+
+        //random setup required variables
+
+        let row =  Number(localStorage.getItem("rows")) || 7;
+        let column = Number(localStorage.getItem("columns")) || 5;
+        let difficulty = localStorage.getItem("difficulty") || "easy";
+        
+        let gameEnd = false;
+        const gridContainer = document.getElementById('myGrid');
+        document.documentElement.style.setProperty("--columns",column);
+        document.documentElement.style.setProperty("--rows",row);
+
+        //OBJECT SCALING TO FIT SCREEN SIZE//
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        //height = row
+        //width = column
+        const objectWidth = row*50;
+        const objectHeight = column*50;    
+        
+
+        const widthRatio = screenWidth / objectWidth;
+        const heightRatio = screenHeight / objectHeight;
+        const scaleFactor = Math.min(widthRatio, heightRatio);
+
+        gridContainer.style.transform = `scale(${scaleFactor*.65})`;
+        //OBJECT SCALING TO FIT SCREEN SIZE//
+
+
+        //MAP GEN//
+        //digital map setup
+        let counter=0;
+        let grid=[];
+        let line = [];
+        const mode = localStorage.getItem("mode");
+        //let standable=[];
+        function isNumeric(value) {
+            return /^-?\d+$/.test(value);
+        }
+        function generateDigitalGrid(){
+            let extra = [];
+            for(let c=0;c <column; c++){
+                extra.push('-');
+            }
+            //console.log(standable);
+            grid.push(extra);
+            for (let r=0; r < row-2; r++){
+                for(let c=0; c< column; c++){
+                    line.push('*');
+                }
+                grid.push(line);
+                line=[];
+            }
+            grid.push(extra);
+            console.log(grid);
+        }
+        function customDigitalGrid(){
+            const customMap = localStorage.getItem("map").split(",");
+            ///console.log(customMap)
+            row = customMap[0];
+            column = customMap[1];
+            generateDigitalGrid();
+            //console.log(grid);
+            let i =2;
+            for (let r=0; r < row; r++){
+                for(let c=0; c< column; c++){
+                    if(grid[r][c]!=customMap[i]){
+                        if(isNumeric(customMap[i])==true){
+                            grid[r][c]=Number(customMap[i]);
+                        }else{
+                            grid[r][c]=customMap[i];
+                        }
+                    }
+                    i++;
+                }
+                
+            }
+        }
+        if(mode == "gen"){
+            generateDigitalGrid();
+        }else{
+            //generate digital player board
+            customDigitalGrid();
+        }
+        
+        
+
+
+        
+
+
+        function build(coord, rand){
+            //So effececient I'm so good :D
+            let directions = {
+                0 : [-1,0],
+                1 : [-1,0],
+                2 : [0,1],
+                3 : [0,-1]
+            };
+            let newCoord = [coord[0] + directions[rand][0], coord[1] + directions[rand][1]];
+ 
+            if(newCoord[0] >= 0 || newCoord[0] <= column-1 || newCoord[1] >= 0 || newCoord[1] <= column-1){
+                if(grid[newCoord[0]][newCoord[1]] == '*'){
+                    grid[newCoord[0]][newCoord[1]] = counter;
+                    counter++;
+
+                    return newCoord;
+                }
+                
+            }
+            return coord;
+            
+        }
+
+        //actual map gen
+        //start by generating start loc
+        let rand = Math.floor(Math.random() * 5);
+        let coord = [column, rand];
+        if(mode == "gen"){
+            grid[coord[0]][coord[1]] = counter;
+            counter++;
+            while(true){
+                rand = Math.floor(Math.random()*4);
+                //randomly builds in the randomly selected direction 
+                coord = build(coord, rand);
+
+                if(coord[0] == 1){
+                    break;
+                }
+            }
+        }
+        
+
+
+
+        //console.log(grid);
+
+        //GRID CREATION//
+        //with animation!
+
+
+        let r=0;
+        let c=0;
+        let timer = 2000 / (column*row);
+        function createSquare(i=0){
+            const gridItem = document.createElement('div');
+            
+            gridItem.id = `${r} ${c}`;//give it id that matches with the digitl grid.
+            gridItem.classList.add('grid-item');
+            
+            if(grid[r][c] == '-'){
+                gridItem.classList.add("safe");
+            }
+
+            gridContainer.appendChild(gridItem);
+            fadeIn(gridItem, 1000);
+            c++;
+            if(c%column==0){
+                c=0;
+                r++;
+            }
+
+            if(i==column*row-1){
+                updateGrid(0,0)
+                return;
+            }
+            i++;
+            setTimeout(() => createSquare(i), timer);
+        }
+        createSquare();
+        
+        //GRID CREATION//
+
+        //UPDATES BOTH GRIDS//
+        //starting position of the player
+        let playerCoords = [row-1, 0];
+        let count = -1;
+        function onPath(){
+            if(playerCoords[0] == 0){
+                
+                gameEnd = true;
+                openMenu();
+            }
+            if (grid[playerCoords[0]][playerCoords[1]] != '-'){
+                count++;
+
+                if(grid[playerCoords[0]][playerCoords[1]] != count && grid[playerCoords[0]][playerCoords[1]] != count-2){
+                    //oopsie stepped on the wrong thing!
+                    setTimeout(() =>restart(), 200);
+                }
+            }
+        }
+        function restart(){
+            let square = document.getElementById(`${playerCoords[0]} ${playerCoords[1]}`);
+            square.textContent = "";
+
+            square.classList.remove('stand');
+            playerCoords = [row-1, 0];
+            updateGrid(0,0);
+            count= -1;
+        }
+        function updateGrid(r,c){
+            if(gameEnd == false && menuOpen == false){
+                let next = [playerCoords[0]+r,playerCoords[1]+c];
+                let current = [playerCoords[0],playerCoords[1]];
+                let square = document.getElementById(`${next[0]} ${next[1]}`);
+                let prevSquare = document.getElementById(`${current[0]} ${current[1]}`);
+                try{
+
+                    if (difficulty == "impossible"){
+                        prevSquare.textContent = "";
+                        if(grid[next[0]][next[1]] == '-'){
+                            square.textContent = "O";
+                        }
+                    }else{
+                        prevSquare.textContent = "";
+                        square.textContent = "O";
+
+                        if(difficulty == "hard"){
+                            prevSquare.classList.remove('stand');
+                            square.classList.add("stand");
+                        }else if (difficulty == "medium"){
+                            square.classList.add("stand");
+
+                        }else if (difficulty == "easy"){
+                            square.classList.add("stand");
+                            if(isNumeric(grid[current[0]][current[1]])){
+                                prevSquare.textContent = grid[current[0]][current[1]]
+                            }
+                            
+                        }
+                    }
+                    
+                    
+
+
+                    playerCoords = [next[0], next[1]];
+                    //console.log(grid);
+
+                    //checks if the player is on the path
+                    onPath();
+                    
+                } catch{
+                    console.log(playerCoords[0], playerCoords[1])
+                    console.log(current[0], current[1])
+                    prevSquare.textContent = "O";
+                    console.log("You can't leave the grid!");
+                }
+            }
+            
+
+            
+        }
+
+
+        
+
+        //UPDATES BOTH GRIDS//
+
+        //MENU STUFF//
+        const menu = document.getElementById("menu");
+        const pauseText = document.getElementById("pause-text");
+        // <p id = "resume" class = "clickable">Resume</p>
+        // <p id = "restart" class = "clickable">Restart</p>
+        // <p id = "menu" class = "clickable">Menu</p>
+        const menuHeader = document.getElementById("menu-text")
+        const resumeTxt = document.getElementById("resume");
+        const restartTxt = document.getElementById("restart");
+        const menuTxt = document.getElementById("menuBtn");
+        //menu.style.display = "none";
+        menu.style.transform = "translateY(200%)";
+        let menuOpen = false
+        function openMenu(){
+            if(gameEnd == true){
+                menuHeader.textContent = "Game Won!";
+                resumeTxt.textContent = "Resume";
+                resumeTxt.style.display = "none";
+                restartTxt.textContent = "New Game";
+                menuTxt.textContent = "Menu";
+            }else{
+                menuHeader.textContent = "Game Paused";
+                resumeTxt.style.display = "block";
+                resumeTxt.textContent = "Resume";
+                restartTxt.textContent = "Restart";
+                menuTxt.textContent = "Menu";
+            }
+
+            if(menuOpen == false){
+                gridContainer.style.filter = "blur(2px)";
+                menuOpen = true;
+                pauseText.textContent = "Paused";
+                menu.style.transform = "translateY(0)";
+            }else{
+                gridContainer.style.filter = "none";
+                menuOpen = false;
+                pauseText.textContent = "Pause";
+                menu.style.transform = "translateY(200%)";
+                //menu.style.display = "none";
+
+            }
+            
+        }
+        //PLAYER MOVEMENT//
+       
+        const pressedKeys = {};
+
+        document.addEventListener('keydown', (event) => {
+        if (!pressedKeys[event.key]) {
+            pressedKeys[event.key] = true;
+                switch (event.key) {
+                        case 'w': // Move up
+                        updateGrid(-1,0)
+                        break;
+                        case 's': // Move down
+                        updateGrid(1,0)
+                        break;
+                        case 'a': // Move left
+                        updateGrid(0,-1)
+                        break;
+                        case 'd': // Move right
+                        updateGrid(0,1)
+                        break;
+                        case 'Escape':
+                        openMenu();
+                        break;
+                    }
+            
+            
+        }
+        });
+
+        document.addEventListener('keyup', (event) => {
+        delete pressedKeys[event.key];
+        });
+        //PLAYER MOVEMENT//
+
+        pauseText.addEventListener('click', function() {
+            openMenu();
+            
+        });
+        resumeTxt.addEventListener('click', function() {
+            openMenu();
+            
+        });
+</script>
+        
+  </body>
+</html>
