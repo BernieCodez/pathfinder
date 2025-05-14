@@ -1,0 +1,46 @@
+{
+    "challenges": [
+      {
+        "id": 1,
+        "name": "Gotta go FAST!",
+        "description": "Beat a size 7 generated map on hard mode in under 3 minutes!",
+        "difficulty": "Easy",
+        "reward": 100,
+        "requirements":{"map":"gen","size":7,"difficulty":"hard","time":"00:00:30:000"}
+      },
+      {
+        "id": 2,
+        "name": "Invisible",
+        "description": "Beat a size 5 generated map using the impossible difficulty!",
+        "difficulty": "Hard",
+        "reward": 100,
+        "requirements":{"size":5, "difficulty":"impossible", "map":"gen"}
+      },
+      {
+        "id": 3,
+        "name": "One shot! (Okay maybe three)!",
+        "description": "Beat a size 5 generated map (any difficulty) in only three resets!",
+        "difficulty": "Hard",
+        "reward": 100,
+        "requirements":{"size":5, "map":"gen", "other":"3-resets"}
+
+      },
+      {
+        "id": 4,
+        "name": "Impossible",
+        "description": "Beat a custom map marked 'impossible' in the community map gallary!",
+        "difficulty": "Impossible",
+        "reward": 100,
+        "requirements":{"other":"impossible-map-tag", "map":"custom"}
+
+      },
+      {
+        "id": 5,
+        "name": "Right is left & left is right",
+        "description": "Beat a size 5 generated map on hard mode with inverted keys!",
+        "difficulty": "Medium",
+        "reward": 100,
+        "requirements":{"map":"gen","size":5, "difficulty":"hard", "other":"inverted"}
+      }
+    ]
+  }

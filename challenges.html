@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pathfinder</title>
+    <link id="theme-link" rel="stylesheet" href="style.css" />
+    <style>
+        p{
+            font-size: 1.5rem;
+        }
+        body{
+            justify-content: flex-start;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="sort-nav">
+        <div class="dropdown-container">
+        <p>Sort by: </p>
+        <select class="selector" id="sort-selector">
+            <option value="id">ID</option>
+            <option value="name-normal">Name (A-Z)</option>
+            <option value="name-reverse">Name (Z-A)</option>
+            <option value="difficulty-normal">Difficulty (Easy-Hard)</option>
+            <option value="difficulty-reverse">Difficulty (Hard-Easy)</option>
+        </select>
+        </div>
+    </div>
+    <h3>Active Challenge: </h3>
+    <div id= "active-challenge" class="challenge-container">
+
+    </div>
+    <h3>Challenges:</h3>
+    <div id = "challenge-list" class="challenge-container">
+    
+    </div>
+    
+    <script>
+        function sortTiles(sortStyle, ascending = true, isNumeric = false) {
+            const parentElement = document.getElementById("challenge-list");
+            const elements = [...parentElement.querySelectorAll('div')];
+            const collator = new Intl.Collator(undefined, { numeric: isNumeric, sensitivity: 'base' });
+
+            if(sortStyle == "name"){
+                elements.sort((a, b) => {   
+                    const [firstElement, secondElement] = ascending ? [a, b] : [b, a];
+                    const textOfFirstElement = firstElement.textContent.trim();
+                    const textOfSecondElement = secondElement.textContent.trim();
+                    return collator.compare(textOfFirstElement, textOfSecondElement);
+                });
+            }else if (sortStyle == "id"){
+                elements.sort((a, b) => {   
+                    const [firstElement, secondElement] = ascending ? [a, b] : [b, a];
+                    const firstElementID = firstElement.id;
+                    const secondElementID = secondElement.id;
+                    return collator.compare(firstElementID, secondElementID);
+                });
+            }
+            
+
+            elements.forEach(element => parentElement.appendChild(element));
+        
+            
+        }
+
+        //sortDivs(container, 'div', true); // Sorts divs inside the container alphabetically (ascending)
+        
+        const sort = document.getElementById("sort-selector");
+        sort.addEventListener("change", function() {
+          const selectedValue = sort.value;
+          if(selectedValue == "name-normal"){
+                sortTiles("name", true);
+          }else if (selectedValue == "name-reverse"){
+            sortTiles("name", false)
+          }else if(selectedValue == "id"){
+            sortTiles("id", true);
+          }
+        });
+
+        
+        function challengeTiles(data){
+
+            challengeLength = Object.keys( data.challenges ).length;
+
+            for(let i=0; i<challengeLength; i++){
+                const tile = document.createElement('div');
+            
+                tile.id = data.challenges[i]["id"];//give it id that matches with the digitl grid.
+                tile.classList.add('challenge');
+                
+
+                const name = document.createElement("h3");
+                let textNode = document.createTextNode(data.challenges[i]["name"]);
+                name.appendChild(textNode);
+                name.id = "name";
+
+                const difficulty = document.createElement("h4");
+                textNode = document.createTextNode(`Difficulty: ${data.challenges[i]["difficulty"]}`);
+                difficulty.appendChild(textNode);
+
+                const description = document.createElement("p");
+                textNode = document.createTextNode(data.challenges[i]["description"]);
+                description.appendChild(textNode);
+
+                description.style.fontSize = "1.5rem";
+
+
+                tile.appendChild(name);
+                tile.appendChild(difficulty);
+                tile.appendChild(description);
+
+
+
+                challengeList = document.getElementById("challenge-list");
+                challengeList.appendChild(tile);
+                //document.body.appendChild(tile);
+
+
+                tile.addEventListener('click', function(event) {
+                    //Make it toggleable
+                    let tileID = tile.id;
+                    if(localStorage.getItem("challenge") == tileID){
+                        localStorage.setItem("challenge", 0);
+                        //0 means no challenge active.
+                        localStorage.setItem("challenge-name", "none");
+
+                        //add to normal list
+                        const newParent = document.getElementById('challenge-list');
+                        newParent.appendChild(tile);
+                    }else{
+                        //const name = tile.getElementById("name")
+                        const name = tile.children[0].textContent;
+                        localStorage.setItem("challenge", tileID);
+                        localStorage.setItem("challenge-name", name);
+
+                        const activeChallenge = document.getElementById('active-challenge');
+                        const challengeList = document.getElementById("challenge-list");
+
+                        //remove all active challenges first
+                        const elements = [...activeChallenge.querySelectorAll('div')];
+                        elements.forEach(element => challengeList.appendChild(element));
+                        
+                        //add to active challenge list
+                        activeChallenge.appendChild(tile);
+                    }
+                    //alert(localStorage.getItem("challenge"))
+                });
+
+
+            }
+        }
+
+
+        //parsing the challenges JSON file
+        async function readJson(file_path) {
+        try {
+            const response = await fetch(file_path);
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error("Error reading JSON file:", error);
+        }
+        }
+        readJson('./challenges.json')
+        .then(data => {
+            const challenges =data;
+            console.log(challenges);
+            challengeTiles(challenges);
+        });
+        
+
+        
+    </script>
+    <script>
+        function checkOverflow() {
+      const square = document.getElementById("challenge-list");
+    console.log("checked");
+    if (square.scrollHeight > square.clientHeight) {
+      // Content is overflowing, disable justify-content: center;
+      square.style.justifyContent = 'flex-start'; // Align content to the top
+    } else {
+      // Content fits, keep it centered
+      square.style.justifyContent = 'center';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+
+  // Initial check
+  checkOverflow();
+
+  // Optionally, recheck if the window is resized
+  window.addEventListener('resize', checkOverflow);
+});
+
+//checkOverflow();
+    </script>
+    <script src="scroll.js"></script>
+  </body>
+</html>

@@ -3,7 +3,7 @@ body {
     overflow-x: hidden;
     display: flex;
     font-family: "Fredoka", sans-serif;
-    padding: 0rem 30rem;
+    padding: 0rem 15rem;
     height: 100vh;
     margin: 0;
     background-color: #161616;
@@ -25,13 +25,37 @@ h1 {
     transition: all 1s ease;
     position:absolute;
 }
-h1:hover {
+/* h1:hover {
     color: white;  
     font-size: 7.25rem;
     text-align: center;
     margin: 3rem 1rem;
     transition: all 1s ease;
     position:absolute;
+} */
+h2 {
+  color: white;  
+  font-size: 4.5rem;
+  text-align: center;
+  transition: all 1s ease;
+  margin: .5rem 1rem;
+
+}
+h3 {
+  color: white;  
+  font-size: 3rem;
+  text-align: center;
+  transition: all 1s ease;
+  margin: .5rem 1rem;
+
+}
+h4 {
+  color: white;  
+  font-size: 2rem;
+  text-align: center;
+  transition: all 1s ease;
+  margin: .5rem 1rem;
+
 }
 p {
     text-align: center;
@@ -62,6 +86,7 @@ p:hover{
     position: relative;
   }
   input {
+    font-family: "Fredoka", sans-serif;
     outline: none;
     font-size: 1.5rem;
     padding: 1.5rem 0.625rem;
@@ -81,16 +106,17 @@ p:hover{
 }
 
 .grid-container {
+    /* filter: blur(2px); */
     justify-content: center;
     align-content: center; 
 
     display: grid;
     grid-template-columns: repeat(var(--columns, 5), 50px); /* default is 5 columns, each 50px wide */
     grid-template-rows: repeat(var(--rows, 7), 50px);    /* default is 7 rows, each 50px high */
-    transform: scale(2.5);
+    transform: scale(1.5);
     width: 100%;
     height: 100%;
-
+    transition: all .5s ease;
   }
   
   .grid-item {
@@ -124,7 +150,7 @@ button {
   font-family: "Fredoka", sans-serif;
   background-color: transparent;
   border: .25rem solid rgb(155, 155, 155);
-  border-radius: 2rem;
+  border-radius: 1.75rem;
   color: rgb(155, 155, 155);
   font-size: 3rem;
   padding: 0.5rem 1rem;
@@ -191,3 +217,130 @@ button {
   background-color: #2c2c2c;
 }
 /* DROPDOWN MENU CSS */
+
+.tool-bar{
+  height: 90%;
+  width: 20rem;
+  /* position: fixed; */
+  right: 2.5%;
+  position: absolute;
+
+  z-index: 5;
+  border-radius: 1rem;
+  border: 0.25rem solid rgb(155, 155, 155);
+  background: transparent;
+  transition: 0.5s ease;
+
+  overflow-y: scroll;
+
+  justify-content: center;
+  align-items: center;
+
+  display: grid;
+  place-items: center;
+}
+
+
+.menu{
+  height: 80%;
+  width: 25rem;
+  /* position: fixed; */
+  position: absolute;
+  z-index: 5;
+  border-radius: 1rem;
+  border: 0.25rem solid rgb(155, 155, 155);
+  background: #161616;
+  transition: 0.5s ease;
+  overflow-y: auto;
+  display: flex;
+  background-color: #161616;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  transition: all .5s ease;
+}
+#pause-text{
+  position: absolute;
+  top: 1rem;
+  left: 3rem;
+  font-size: 2rem;
+}
+.challenge-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  box-sizing: border-box;
+}
+.challenge{
+  height: 20rem;
+  width: 50rem;
+  /* position: fixed; */
+  z-index: 5;
+  border-radius: 1rem;
+  border: 0.25rem solid rgb(155, 155, 155);
+  background: #161616;
+  overflow-y: scroll;
+  display: flex;
+  background-color: #161616;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  transition: all .5s ease;
+  margin: 3rem;
+  overflow-y: auto;
+}
+.next{
+  position: relative;
+  bottom: 0;
+}
+
+.challenge-notifier{
+  height: 10rem;
+  width: 30rem;
+
+
+
+  /* position: fixed; */
+  right: 2.5%;
+  top: 2.5%;
+  position: absolute;
+
+  z-index: 5;
+  border-radius: 1rem;
+  border: 0.25rem solid rgb(155, 155, 155);
+  background: #161616;
+  overflow-y: scroll;
+  display: flex;
+  background-color: #161616;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  transition: all .5s ease;
+  margin: 3rem;
+  
+  overflow: hidden;
+  white-space: nowrap; 
+  align-items: baseline;
+  text-overflow: ellipsis;
+
+}
+.sort-nav{
+  position: relative;
+  top: 0;
+  height: 15rem;
+  width: 99;
+  border: 0.25rem solid rgb(155, 155, 155);
+  border-radius: 1rem;
+  background: #161616;
+  background-color: #161616;
+
+}
+#timer{
+  position: absolute;
+  top: 4rem;
+  right: 4rem;
+}

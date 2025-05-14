@@ -10,11 +10,14 @@
   <body>
     <h1 class="invis"></h1>
     <h1 class="type"></h1>
-    <p id="play" style="display: none;" class = "clickable"  onclick="window.location.href='playable.html'">Play</p>
-    <p id="help" style="display: none;" class = "clickable"  onclick="window.location.href='index.html'">Help</p>
-    <p id="settings" style="display: none;" class = "clickable" onclick="window.location.href='game.html'">Settings</p>
+    <p id="play" style="display: none;" class = "clickable"  onclick="window.location.href='play.html'">Play</p>
+    <p id="help" style="display: none;" class = "clickable"  onclick="window.location.href='help.html'">Help</p>
+    <p id="settings" style="display: none;" class = "clickable" onclick="window.location.href='settings.html'">Settings</p>
 
     <script>
+      if(sessionStorage.getItem("animate") == null){
+        sessionStorage.setItem("animate", true);
+      }
         //ANIMATIONS//
         const textElement = document.querySelector(".type");
         
@@ -32,7 +35,6 @@
             
 
         }
-        setTimeout(() => Type(textElement, "Pathfinder", 100), 500);
 
 
         function fadeIn(element, duration) {
@@ -55,14 +57,36 @@
             }
             requestAnimationFrame(animation);
         }
-        setTimeout(() => 
+        
+
+        if(sessionStorage.getItem("animate") === "true"){
+          setTimeout(() => Type(textElement, "Pathfinder", 100), 500);
+
+          setTimeout(() => 
         textElement.style.transform = 'translateY(-10rem)'
         , 1750);
 
+          setTimeout(() => fadeIn(play, 1000), 1750);
+          setTimeout(() => fadeIn(help, 1000), 2000);
+          setTimeout(() => fadeIn(settings, 1000), 2250);
+          sessionStorage.setItem("animate", false);
+        }else{
+          textElement.textContent = "Pathfinder";
+          //Type(textElement, "Pathfinder", 0);
 
-        setTimeout(() => fadeIn(play, 1000), 1750);
-        setTimeout(() => fadeIn(help, 1000), 2000);
-        setTimeout(() => fadeIn(settings, 1000), 2250);
+          textElement.style.transition = "none";
+          textElement.style.transform = 'translateY(-10rem)'
+          //textElement.style.transition = "all 1s ease";
+
+          play.style.display = "block";
+          help.style.display = "block";
+          settings.style.display = "block";
+
+          // fadeIn(play, 0);
+          // fadeIn(help,0);
+          // fadeIn(settings,0);
+        }
+        
             
             
 

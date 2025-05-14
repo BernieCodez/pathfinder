@@ -1,0 +1,480 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pathfinder</title>
+    <link id="theme-link" rel="stylesheet" href="style.css" />
+    <style>
+        .grid-container{
+            position: static;
+            /* top: 0rem;
+            right: 50rem; */
+        }
+        body{
+            overflow-y: hidden;
+        }
+    </style>
+  </head>
+  <body>
+    <div id="tool-bar" class = "tool-bar">
+        <p>Choose number of rows:</p>        
+        <div class="container">
+            <div class="entryarea">
+                <input
+                    class="message"
+                    id="row"
+                    type="number"
+                    autocomplete="off"
+                    maxlength="10"
+                />
+                <!-- change max length if the game can't handle massive grids. -->
+            </div>
+        </div>
+
+
+
+        <p>Choose number of columns:</p>
+        <div class="container">
+            <div class="entryarea">
+                <input
+                    class="message"
+                    id="column"
+                    type="number"
+                    autocomplete="off"
+                    maxlength="10"
+                />
+                <!-- change max length if the game can't handle massive grids. -->
+            </div>
+        </div>
+
+            <div class="dropdown-container">
+                <p>Map Type: </p> 
+                <br>
+                <select class="selector" id="place-selector">
+                    <option value="path">Path Block</option>
+                    <option value="safe">Safe Block</option>
+                </select>
+            </div>
+
+            <div id = "counterHolder">
+                <p>Counter: </p>
+                <div class="container">
+                    <div class="entryarea">
+                        <input
+                            class="message"
+                            id="counter"
+                            type="number"
+                            autocomplete="off"
+                            maxlength="10"
+                        />
+                        <!-- change max length if the game can't handle massive grids. -->
+                    </div>
+                </div>
+            </div>
+            
+          <button id="export" class="glow-button">
+            Export
+          </button>
+    </div>
+    <div class="grid-container" id="myGrid"></div>
+    
+        
+<script>
+    
+
+    //ANIMATIONS FOR THE GRID//
+    function fadeIn(element, duration) {
+        element.style.opacity = 0;
+        element.style.display = "block";
+        let startTime = null;
+
+        function animation(currentTime) {
+            if (!startTime) {
+            startTime = currentTime;
+            }
+
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1); 
+            element.style.opacity = progress;
+
+            if (timeElapsed < duration) {
+            requestAnimationFrame(animation);
+            }
+        }
+        requestAnimationFrame(animation);
+    }
+    //ANIMATIONS FOR THE GRID//
+
+    //random setup required variables
+
+    let row =  Number(localStorage.getItem("rows")) || 7;
+    let column = Number(localStorage.getItem("columns")) || 5;
+
+
+    let difficulty = localStorage.getItem("difficulty") || "easy";
+
+    const counterInput = document.getElementById("counter");
+    let playerBuildCounter = 0;
+    counterInput.value = playerBuildCounter;
+    let gameEnd = false;
+
+    let placing = "path";
+    const objectSelector = document.getElementById("place-selector");
+    objectSelector.value = placing;
+    const gridContainer = document.getElementById('myGrid');
+    document.documentElement.style.setProperty("--columns",column);
+    document.documentElement.style.setProperty("--rows",row);
+
+    //OBJECT SCALING TO FIT SCREEN SIZE//
+    function updateSize(){
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        //height = row
+        //width = column
+        const objectWidth = row*50;
+        const objectHeight = column*50;    
+        
+
+        const widthRatio = screenWidth / objectWidth;
+        const heightRatio = screenHeight / objectHeight;
+        const scaleFactor = Math.min(widthRatio, heightRatio);
+
+        gridContainer.style.transform = `scale(${scaleFactor*.65})`;
+    }
+    updateSize();
+    //OBJECT SCALING TO FIT SCREEN SIZE//
+
+
+    //MAP GEN//
+    //digital map setup
+    let counter=0;
+    let grid=[];
+    let line = [];
+    //let standable=[];
+    
+    //console.log(standable);
+    // grid.push(extra);
+    // for (let r=0; r < column; r++){
+    //     for(let c=0; c< column; c++){
+    //         line.push('*');
+    //     }
+    //     grid.push(line);
+    //     line=[];
+    // }
+    // grid.push(extra);
+    
+    function generateDigitalMap(rowz, columnz){
+        let extra = [];
+        for(let c=0;c <columnz; c++){
+            extra.push('-');
+        }
+        grid.push(extra);
+        line=[];
+
+        for(let i =0; i<columnz; i++){
+            for(let j=0; j<columnz; j++){
+                line.push('*');
+            }
+            grid.push(line);
+            line=[];
+        }
+        grid.push(extra);
+        console.log(grid);
+    }
+    generateDigitalMap(row, column);
+    
+
+
+    function build(coord, rand){
+        //So effececient I'm so good :D
+        let directions = {
+            0 : [-1,0],
+            1 : [-1,0],
+            2 : [0,1],
+            3 : [0,-1]
+        };
+        let newCoord = [coord[0] + directions[rand][0], coord[1] + directions[rand][1]];
+
+        if(newCoord[0] >= 0 || newCoord[0] <= column-1 || newCoord[1] >= 0 || newCoord[1] <= column-1){
+            if(grid[newCoord[0]][newCoord[1]] == '*'){
+                grid[newCoord[0]][newCoord[1]] = counter;
+                counter++;
+
+                return newCoord;
+            }
+            
+        }
+        return coord;
+        
+    }
+
+    //actual map gen
+    //start by generating start loc
+    // let rand = Math.floor(Math.random() * 5);
+    // let coord = [column, rand];
+    // grid[coord[0]][coord[1]] = counter;
+    // counter++;
+
+    // while(true){
+    //     rand = Math.floor(Math.random()*4);
+    //     //randomly builds in the randomly selected direction 
+    //     coord = build(coord, rand);
+
+    //     if(coord[0] == 1){
+    //         break;
+    //     }
+    // }
+
+
+
+
+    //GRID CREATION//
+    //with animation!
+
+
+    let r=0;
+    let c=0;
+    let timer = 2000 / (column*column+column*2-1);
+    function createSquare(i=0){
+        if(i==0){
+            r=0;
+            c=0;
+            timer = 2000 / (column*column+column*2-1);
+        }
+        const gridItem = document.createElement('div');
+        
+        gridItem.id = `${r} ${c}`;//give it id that matches with the digitl grid.
+        gridItem.classList.add('grid-item');
+        
+        if(r == 0 || r== row-1){
+            gridItem.classList.add("safe");
+        }
+
+        gridItem.addEventListener('click', function(event) {
+            let string = gridItem.id;
+
+        // Code to execute when the element is clicked
+            if(placing == "path"){
+                if(gridItem.textContent == ""){
+                    //set map grid to thing
+                    gridItem.textContent = playerBuildCounter
+                    gridItem.classList.add("safe");
+
+                    //set digital map
+                    grid[string[0]][string[2]] = Number(playerBuildCounter);
+
+                    //changes the counter in the input field
+                    playerBuildCounter++;
+                    counterInput.value = playerBuildCounter;
+                }else{
+                    //set up map grid thing
+                    gridItem.classList.remove("safe")
+                    gridItem.textContent = "";
+
+                    //set up the digital map thing
+                    grid[string[0]][string[2]] = "";
+
+                    //change the counter in the input field
+                    playerBuildCounter--;
+                    counterInput.value = playerBuildCounter;
+                    
+                }
+            }else if(placing == "safe"){
+                if(gridItem.classList.contains("safe")){
+                    gridItem.classList.remove("safe");
+                    gridItem.textContent = "";
+                    grid[string[0]][string[2]] = "";
+                    //REMEMBER TO ADD THE SAFE BLOCK TO THE DIGITAL MAP
+                }else if(gridItem.classList.contains("safe") == false){
+                    gridItem.classList.add("safe");
+                    grid[string[0]][string[2]] = '-';
+                }
+            }
+
+
+            console.log(grid);
+
+        });
+
+        gridContainer.appendChild(gridItem);
+        fadeIn(gridItem, 1000);
+        c++;
+        if(c%column==0){
+            c=0;
+            r++;
+        }
+
+        if(i==column*row-1){
+            //updateGrid(0,0)
+            return;
+        }
+        i++;
+        setTimeout(() => createSquare(i), timer);
+    }
+    createSquare();
+    
+    //GRID CREATION//
+
+    //UPDATES BOTH GRIDS//
+    //starting position of the player
+    let playerCoords = [column+1, 0];
+    let count = -1;
+    function onPath(){
+        if(playerCoords[0] == 0){
+            console.log("You won!");
+            gameEnd = true;
+        }
+        if (grid[playerCoords[0]][playerCoords[1]] != '-'){
+            count++;
+
+            if(grid[playerCoords[0]][playerCoords[1]] != count ){
+                //oopsie stepped on the wrong thing!
+                setTimeout(() =>restart(), 200);
+            }
+        }
+    }
+    function restart(){
+        let square = document.getElementById(`${playerCoords[0]} ${playerCoords[1]}`);
+        square.textContent = "";
+
+        square.classList.remove('stand');
+        playerCoords = [column+1, 0];
+        updateGrid(0,0);
+        count= -1;
+    }
+    function updateGrid(r,c){
+        if(gameEnd == false){
+            let next = [playerCoords[0]+r,playerCoords[1]+c];
+            let current = [playerCoords[0],playerCoords[1]];
+            let square = document.getElementById(`${next[0]} ${next[1]}`);
+            let prevSquare = document.getElementById(`${current[0]} ${current[1]}`);
+            try{
+
+                
+                prevSquare.textContent = "";
+                square.textContent = "O";
+
+
+                prevSquare.classList.remove('stand');
+                square.classList.add("stand");
+
+
+                playerCoords = [next[0], next[1]];
+                //console.log(grid);
+
+                //checks if the player is on the path
+                // onPath();
+                
+            } catch{
+                //prevSquare.textContent = "O";
+                //console.log("You can't leave the grid!");
+            }
+        }
+        
+
+        
+    }
+
+
+    
+
+    //UPDATES BOTH GRIDS//
+
+
+    //PLAYER MOVEMENT//
+   
+    // const pressedKeys = {};
+
+    // document.addEventListener('keydown', (event) => {
+    // if (!pressedKeys[event.key]) {
+    //     pressedKeys[event.key] = true;
+    //         switch (event.key) {
+    //                 case 'w': // Move up
+    //                 updateGrid(-1,0)
+    //                 break;
+    //                 case 's': // Move down
+    //                 updateGrid(1,0)
+    //                 break;
+    //                 case 'a': // Move left
+    //                 updateGrid(0,-1)
+    //                 break;
+    //                 case 'd': // Move right
+    //                 updateGrid(0,1)
+    //                 break;
+    //             }
+        
+        
+    // }
+    // });
+
+    // document.addEventListener('keyup', (event) => {
+    // delete pressedKeys[event.key];
+    // });
+
+    ///DONT DELETE YET COULD BE USED FOR LIKE HOTKEYS ^^^^
+
+    //PLAYER MOVEMENT//
+
+    //Monitor Inputs//
+    const columnInput = document.getElementById("column");
+    const rowInput = document.getElementById("row");
+    columnInput.value = column;
+    rowInput.value = row;
+    columnInput.addEventListener('input', function(event) {
+        if(event.target.value != ""){
+            column = Number(event.target.value);
+            document.documentElement.style.setProperty("--columns",column);
+            document.documentElement.style.setProperty("--rows",row);
+            generateDigitalMap(row, column);
+
+            gridContainer.replaceChildren();
+            createSquare();
+            updateSize();
+        }
+          
+        });
+        rowInput.addEventListener('input', function(event) {
+            if(event.target.value != ""){
+                row = Number(event.target.value);
+                document.documentElement.style.setProperty("--columns",column);
+                document.documentElement.style.setProperty("--rows",row);
+                generateDigitalMap(row, column);
+
+                gridContainer.replaceChildren();
+                createSquare();
+                updateSize();
+            }
+
+          
+        });
+        counterInput.addEventListener('input', function(event){
+            if(event.target.value != ""){
+                playerBuildCounter = Number(event.target.value);
+                console.log(playerBuildCounter);
+            }
+        })
+
+        counterHolder = document.getElementById("counterHolder");
+        objectSelector.addEventListener("change", function() {
+            placing = objectSelector.value;
+            if(placing == "path"){
+                counterHolder.style.display = "block";
+            }else{
+                counterHolder.style.display = "none";
+            }
+
+        });
+
+        const exportBtn = document.getElementById("export");
+        exportBtn.addEventListener('click', function() {
+            //copy stuff to clipboard
+
+            navigator.clipboard.writeText(`${row},${column},${grid}`);
+            alert("Copied to clipboard!");
+        });
+    //Monitor Inputs
+</script>
+  </body>
+</html>
