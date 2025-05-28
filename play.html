@@ -15,8 +15,13 @@
     </style>
   </head>
   <body>
+    <div id = "challenge-notifier" class = "challenge-notifier"> 
+      <h3>Challenge Active</h3>
+      <h4 id = "challenge-name">text</h4>
+     </div>
     <p id = "pause-text" class = "clickable">Pause</p>
     <h3 id = "timer">Press WASD to start!</h3>
+    <h3 id = "reset-counter">Resets: 0</h3>
     <!-- <button id="pause-timer" style="z-index: 10;">Pause</button>
     <button id="start-timer" style="z-index: 10;">Start</button>
     <button id="reset-timer" style="z-index: 10;">Reset</button> -->
@@ -30,7 +35,19 @@
     </div>
     <div class="grid-container" id="myGrid">
     <script>
-        
+        const resetText = document.getElementById("reset-counter");
+        const timerRef = document.getElementById("timer");
+        const challenge = localStorage.getItem("challenge") || 0;
+        const challengeText = document.getElementById("challenge-name");
+        const challengeContainer = document.getElementById("challenge-notifier")
+        if(challenge == 0){
+          challengeContainer.style.display = "none";
+        }else{
+          challengeContainer.style.display = "block";
+          challengeText.textContent = localStorage.getItem("challenge-name");
+          timerRef.style.top = "16rem";
+          resetText.style.top = "20rem";
+        }
 
         //ANIMATIONS FOR THE GRID//
         function fadeIn(element, duration) {
@@ -56,6 +73,14 @@
         //ANIMATIONS FOR THE GRID//
 
         //random setup required variables
+        let hacks = false;
+        function cheat(){
+            console.log("Resorting to cheating I see!");
+            hacks = true;
+            console.log(grid);
+
+        }
+
         let row =  Number(localStorage.getItem("rows")) || 7;
         let column = Number(localStorage.getItem("columns")) || 5;
         let difficulty = localStorage.getItem("difficulty") || "easy";
@@ -64,6 +89,8 @@
         const gridContainer = document.getElementById('myGrid');
         document.documentElement.style.setProperty("--columns",column);
         document.documentElement.style.setProperty("--rows",row);
+
+        let resetCounter = 0;
 
         //OBJECT SCALING TO FIT SCREEN SIZE//
         const screenWidth = window.innerWidth;
@@ -79,6 +106,8 @@
         const scaleFactor = Math.min(widthRatio, heightRatio);
 
         gridContainer.style.transform = `scale(${scaleFactor*.65})`;
+
+        let isSafe = true;
         //OBJECT SCALING TO FIT SCREEN SIZE//
 
 
@@ -107,7 +136,6 @@
                 line=[];
             }
             grid.push(extra);
-            console.log(grid);
         }
         function customDigitalGrid(){
             const customMap = localStorage.getItem("map").split(",");
@@ -230,29 +258,56 @@
         //starting position of the player
         let playerCoords = [row-1, 0];
         let count = -1;
+        let highestReachedPoint = -1;
         function onPath(){
             if(playerCoords[0] == 0){
-                
+                //check if game won
                 gameEnd = true;
-                openMenu();
+                openMenu("challenge fail");
             }
             if (grid[playerCoords[0]][playerCoords[1]] != '-'){
                 count++;
 
-                if(grid[playerCoords[0]][playerCoords[1]] != count && grid[playerCoords[0]][playerCoords[1]] != count-2){
+                if(grid[playerCoords[0]][playerCoords[1]] == count-2){
+                    count-=2;//walking backwards for whatever reason 
+                }
+                if(grid[playerCoords[0]][playerCoords[1]] != count){
                     //oopsie stepped on the wrong thing!
+                    isSafe = false;
                     setTimeout(() =>restart(), 200);
+                }
+                if(count>highestReachedPoint){
+                    highestReachedPoint = count;
                 }
             }
         }
         function restart(){
             let square = document.getElementById(`${playerCoords[0]} ${playerCoords[1]}`);
             square.textContent = "";
-
-            square.classList.remove('stand');
+            if(difficulty == "easy" || difficulty == "medium"){
+                if(isNumeric(grid[playerCoords[0]][playerCoords[1]]) == true && grid[playerCoords[0]][playerCoords[1]] <= highestReachedPoint){
+                    if(difficulty == "easy"){
+                        square.textContent = grid[playerCoords[0]][playerCoords[1]];
+                    }
+                    
+                }else{
+                    square.classList.remove('stand');
+                }
+            }else{
+                square.classList.remove('stand');
+            }
+            
             playerCoords = [row-1, 0];
             updateGrid(0,0);
             count= -1;
+            isSafe = true;
+
+            resetCounter+=1;
+            resetText.textContent = `Resets: ${resetCounter}`;
+            if(challenge == 3){
+                gameEnd = true;
+                openMenu("failed");
+            }
         }
         function updateGrid(r,c){
             if(gameEnd == false && menuOpen == false){
@@ -296,10 +351,14 @@
                     onPath();
                     
                 } catch{
-                    console.log(playerCoords[0], playerCoords[1])
-                    console.log(current[0], current[1])
-                    prevSquare.textContent = "O";
-                    console.log("You can't leave the grid!");
+                    try{
+                        console.log(playerCoords[0], playerCoords[1])
+                        console.log(current[0], current[1])
+                        prevSquare.textContent = "O";
+                        console.log("You can't leave the grid!");
+                    }catch{
+                        restart();
+                    }
                 }
             }
             
@@ -325,7 +384,7 @@
         //menu.style.display = "none";
         menu.style.transform = "translateY(200%)";
         let menuOpen = false
-        function openMenu(){
+        function openMenu(text = "none"){
             if(gameEnd == true){
                 menuHeader.textContent = "Game Won!";
                 resumeTxt.textContent = "Resume";
@@ -340,8 +399,12 @@
                 menuTxt.textContent = "Menu";
             }
 
+            if(text == "failed"){
+                menuHeader.textContent = "Challenge Failed";
+            }
+
             if(menuOpen == false){
-                console.log("menu open");
+                // console.log("menu open");
                 gridContainer.style.filter = "blur(2px)";
                 menuOpen = true;
                 pauseText.textContent = "Paused";
@@ -352,7 +415,7 @@
                 menuOpen = false;
                 pauseText.textContent = "Pause";
                 menu.style.transform = "translateY(200%)";
-                if(timerRef.textContent !== "Press WASD to start!"){
+                if(timerRef.textContent !== "Press WASD to start!" && gameEnd === false){
                     startTimer();
                 }
                 
@@ -369,26 +432,52 @@
             pressedKeys[event.key] = true;
                 switch (event.key) {
                         case 'w': // Move up
-                        updateGrid(-1,0);
-                        if(menuOpen === false){
+                        if(isSafe == true || hacks == true){
+                            if(challenge != 5){
+                                updateGrid(-1,0);
+                            }else{
+                                updateGrid(1,0);
+                            }
+                            
+                        }
+                        
+                        if(menuOpen === false && gameEnd === false){
                             startTimer();
                         }
                         break;
                         case 's': // Move down
-                        updateGrid(1,0);
-                        if(menuOpen === false){
+                        if(isSafe == true || hacks == true){
+                            if(challenge != 5){
+                                updateGrid(1,0);
+                            }else{
+                                updateGrid(-1,0);
+                            }
+                        }
+                        if(menuOpen === false && gameEnd === false){
                             startTimer();
                         }
                         break;
                         case 'a': // Move left
-                        updateGrid(0,-1);
-                        if(menuOpen === false){
+                        if(isSafe == true || hacks == true){
+                            if(challenge != 5){
+                                updateGrid(0,-1);
+                            }else{
+                                updateGrid(0,1);
+                            }
+                        }
+                        if(menuOpen === false && gameEnd === false){
                             startTimer();
                         }
                         break;
                         case 'd': // Move right
-                        updateGrid(0,1);
-                        if(menuOpen === false){
+                        if(isSafe == true || hacks == true){
+                            if(challenge != 5){
+                                updateGrid(0,1);
+                            }else{
+                                updateGrid(0,-1);
+                            }
+                        }
+                        if(menuOpen === false && gameEnd === false){
                             startTimer();
                         }
                         break;
@@ -405,7 +494,6 @@
         delete pressedKeys[event.key];
         });
         //PLAYER MOVEMENT//
-
         pauseText.addEventListener('click', function() {
             openMenu();
             
@@ -419,7 +507,6 @@
         //TIMER THING//
         
         let [milliseconds, seconds, minutes, hours] = [0, 0, 0, 0];
-        let timerRef = document.getElementById("timer");
         let int = null;
 
         // document.getElementById("start-timer").addEventListener("click", () => {
@@ -434,10 +521,30 @@
 
         function displayTimer() {
             milliseconds += 10;
-            seconds = milliseconds == 1000 ? (seconds + 1) % 60 : seconds;
-            minutes = seconds == 0 && milliseconds == 0 ? (minutes + 1) % 60 : minutes;
-            hours = minutes == 0 && seconds == 0 && milliseconds == 0 ? hours + 1 : hours;
-            milliseconds = milliseconds == 1000 ? 0 : milliseconds;
+
+            if(milliseconds == 1000){
+                seconds += 1;
+                milliseconds = 0;
+            }
+            if(seconds == 60){
+                minutes+=1;
+                seconds=0;
+            }
+            if(minutes == 60){
+                hours+=1;
+                minutes=0;
+            }
+
+
+            if(challenge == 1){
+                if(seconds >= 30){
+                    gameEnd = true;
+                    openMenu("failed");
+                }
+            }
+
+
+
 
             let h = String(hours).padStart(2, "0");
             let m = String(minutes).padStart(2, "0");

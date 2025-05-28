@@ -38,12 +38,20 @@
     </div>
     
     <script>
+        const challenge = localStorage.getItem("challenge") || 0;
+        
         function sortTiles(sortStyle, ascending = true, isNumeric = false) {
+
+            if(sortStyle.includes("reverse")==true){
+                ascending = false;
+            }
+
+
             const parentElement = document.getElementById("challenge-list");
             const elements = [...parentElement.querySelectorAll('div')];
             const collator = new Intl.Collator(undefined, { numeric: isNumeric, sensitivity: 'base' });
 
-            if(sortStyle == "name"){
+            if(sortStyle.includes("name") == true){
                 elements.sort((a, b) => {   
                     const [firstElement, secondElement] = ascending ? [a, b] : [b, a];
                     const textOfFirstElement = firstElement.textContent.trim();
@@ -57,6 +65,20 @@
                     const secondElementID = secondElement.id;
                     return collator.compare(firstElementID, secondElementID);
                 });
+            }else if (sortStyle.includes("difficulty") == true){
+                var sortOrder = ['Easy','Medium','Hard'];   // Declare a array that defines the order of the elements to be sorted.
+                elements.sort(
+                    function(a, b){                              // Pass a function to the sort that takes 2 elements to compare
+                        const firstElementDifficulty = firstElement[1];
+                        const secondElementDifficulty = secondElement[1];
+                        alert(firstElementDifficulty);
+                        if(a.type == b.type){                    // If the elements both have the same `type`,
+                            return a.name.localeCompare(b.name); // Compare the elements by `name`.
+                        }else{                                   // Otherwise,
+                            return sortOrder.indexOf(a.type) - sortOrder.indexOf(b.type); // Substract indexes, If element `a` comes first in the array, the returned value will be negative, resulting in it being sorted before `b`, and vice versa.
+                        }
+                    }
+                );
             }
             
 
@@ -68,20 +90,18 @@
         //sortDivs(container, 'div', true); // Sorts divs inside the container alphabetically (ascending)
         
         const sort = document.getElementById("sort-selector");
+        const sortStyling = localStorage.getItem("sortStyle") || "id";
+        sort.value = sortStyling;
+
         sort.addEventListener("change", function() {
           const selectedValue = sort.value;
-          if(selectedValue == "name-normal"){
-                sortTiles("name", true);
-          }else if (selectedValue == "name-reverse"){
-            sortTiles("name", false)
-          }else if(selectedValue == "id"){
-            sortTiles("id", true);
-          }
+          localStorage.setItem("sortStyle", selectedValue)
+          sortTiles(selectedValue);
         });
 
         
         function challengeTiles(data){
-
+            //GENERATES ALL THE CHALLENGE TILES
             challengeLength = Object.keys( data.challenges ).length;
 
             for(let i=0; i<challengeLength; i++){
@@ -146,12 +166,32 @@
                         activeChallenge.appendChild(tile);
                     }
                     //alert(localStorage.getItem("challenge"))
+                    sortTiles(sortStyling);
                 });
 
 
             }
         }
+        function toggleActive(tileID, thing="none"){
+            //Make it toggleable
+            //let tileID = tile.id;
+            const tile = document.getElementById(tileID)
 
+            const name = tile.children[0].textContent;
+            localStorage.setItem("challenge", tileID);
+            localStorage.setItem("challenge-name", name);
+
+            const activeChallenge = document.getElementById('active-challenge');
+            const challengeList = document.getElementById("challenge-list");
+
+            //remove all active challenges first
+            const elements = [...activeChallenge.querySelectorAll('div')];
+            elements.forEach(element => challengeList.appendChild(element));
+            
+            //add to active challenge list
+            activeChallenge.appendChild(tile);
+        
+        }
 
         //parsing the challenges JSON file
         async function readJson(file_path) {
@@ -168,8 +208,12 @@
             const challenges =data;
             console.log(challenges);
             challengeTiles(challenges);
+            if(challenge != 0){
+                toggleActive(challenge);
+            }
         });
         
+       
 
         
     </script>
@@ -197,6 +241,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 //checkOverflow();
     </script>
-    <script src="scroll.js"></script>
+    <!-- <script src="scroll.js"></script> -->
   </body>
 </html>

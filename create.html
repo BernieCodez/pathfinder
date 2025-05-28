@@ -173,7 +173,7 @@
         grid.push(extra);
         line=[];
 
-        for(let i =0; i<columnz; i++){
+        for(let i =0; i<rowz-2; i++){
             for(let j=0; j<columnz; j++){
                 line.push('*');
             }
@@ -274,7 +274,7 @@
                     gridItem.textContent = "";
 
                     //set up the digital map thing
-                    grid[string[0]][string[2]] = "";
+                    grid[string[0]][string[2]] = "*";
 
                     //change the counter in the input field
                     playerBuildCounter--;
@@ -285,7 +285,7 @@
                 if(gridItem.classList.contains("safe")){
                     gridItem.classList.remove("safe");
                     gridItem.textContent = "";
-                    grid[string[0]][string[2]] = "";
+                    grid[string[0]][string[2]] = "*";
                     //REMEMBER TO ADD THE SAFE BLOCK TO THE DIGITAL MAP
                 }else if(gridItem.classList.contains("safe") == false){
                     gridItem.classList.add("safe");
@@ -427,6 +427,7 @@
             column = Number(event.target.value);
             document.documentElement.style.setProperty("--columns",column);
             document.documentElement.style.setProperty("--rows",row);
+            grid=[] 
             generateDigitalMap(row, column);
 
             gridContainer.replaceChildren();
@@ -440,6 +441,7 @@
                 row = Number(event.target.value);
                 document.documentElement.style.setProperty("--columns",column);
                 document.documentElement.style.setProperty("--rows",row);
+                grid=[]
                 generateDigitalMap(row, column);
 
                 gridContainer.replaceChildren();

@@ -1,4 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Sono:wght@200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Sono:wght@200..800&display=swap');
+
+
+
 body {
     overflow-x: hidden;
     display: flex;
@@ -265,6 +270,7 @@ button {
   top: 1rem;
   left: 3rem;
   font-size: 2rem;
+  z-index: 7;
 }
 .challenge-container{
   display: flex;
@@ -304,15 +310,15 @@ button {
 
 
   /* position: fixed; */
-  right: 2.5%;
-  top: 2.5%;
+  right: 3rem;
+  top: 3rem;
   position: absolute;
 
   z-index: 5;
   border-radius: 1rem;
   border: 0.25rem solid rgb(155, 155, 155);
   background: #161616;
-  overflow-y: scroll;
+  overflow-y: auto;
   display: flex;
   background-color: #161616;
   flex-direction: column;
@@ -329,18 +335,40 @@ button {
 
 }
 .sort-nav{
-  position: relative;
+  position: absolute;
   top: 0;
   height: 15rem;
-  width: 99;
-  border: 0.25rem solid rgb(155, 155, 155);
+  width: 99rem;
   border-radius: 1rem;
+  border: 0.25rem solid rgb(155, 155, 155);
   background: #161616;
   background-color: #161616;
 
 }
+
+
 #timer{
   position: absolute;
   top: 4rem;
   right: 4rem;
+
+  font-family: "Nunito", sans-serif;
+  font-weight: 900;
+
+}
+#reset-counter{
+  position: absolute;
+  top: 8rem;
+  right: 4rem;
+
+  font-family: "Nunito", sans-serif;
+  font-weight: 900;
+
+}
+
+#explaining-text{
+  padding-right: 85rem;
+  position: absolute;
+  top: 8rem;
+  left: 4rem;
 }

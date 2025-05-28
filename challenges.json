@@ -18,11 +18,11 @@
       },
       {
         "id": 3,
-        "name": "One shot! (Okay maybe three)!",
-        "description": "Beat a size 5 generated map (any difficulty) in only three resets!",
+        "name": "One shot!",
+        "description": "Beat a size 5 generated map (any difficulty) without any resets!",
         "difficulty": "Hard",
         "reward": 100,
-        "requirements":{"size":5, "map":"gen", "other":"3-resets"}
+        "requirements":{"size":5, "map":"gen", "other":"0-resets"}
 
       },
       {

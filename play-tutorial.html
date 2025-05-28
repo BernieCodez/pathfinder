@@ -15,12 +15,18 @@
     </style>
   </head>
   <body>
+    <h3 id = "explaining-text">Explaining Text</h3>
+    <div id = "challenge-notifier" class = "challenge-notifier"> 
+      <h3>Challenge Active</h3>
+      <h4 id = "challenge-name">text</h4>
+     </div>
     <p id = "pause-text" class = "clickable">Pause</p>
-    <div class = tool-bar>
-        <p id = "">Welcome to Pathfinder! This is quick guide for playing the game.</p>
-        <p class="next" id = "next">Next</p>
-    </div>
-    
+    <h3 id = "timer">Press WASD to start!</h3>
+    <h3 id = "reset-counter">Resets: 0</h3>
+    <!-- <button id="pause-timer" style="z-index: 10;">Pause</button>
+    <button id="start-timer" style="z-index: 10;">Start</button>
+    <button id="reset-timer" style="z-index: 10;">Reset</button> -->
+
     <div class = "menu" id = "menu">
         <h2 id = "menu-text">Game Paused</h2>
         <p id = "resume" class = "clickable">Resume</p>
@@ -30,7 +36,19 @@
     </div>
     <div class="grid-container" id="myGrid">
     <script>
-        
+        const resetText = document.getElementById("reset-counter");
+        const timerRef = document.getElementById("timer");
+        const challenge = localStorage.getItem("challenge") || 0;
+        const challengeText = document.getElementById("challenge-name");
+        const challengeContainer = document.getElementById("challenge-notifier")
+        if(challenge == 0){
+          challengeContainer.style.display = "none";
+        }else{
+          challengeContainer.style.display = "block";
+          challengeText.textContent = localStorage.getItem("challenge-name");
+          timerRef.style.top = "16rem";
+          resetText.style.top = "20rem";
+        }
 
         //ANIMATIONS FOR THE GRID//
         function fadeIn(element, duration) {
@@ -56,15 +74,19 @@
         //ANIMATIONS FOR THE GRID//
 
         //random setup required variables
+        let hacks = false;
+        
 
         let row =  Number(localStorage.getItem("rows")) || 7;
         let column = Number(localStorage.getItem("columns")) || 5;
-        let difficulty = localStorage.getItem("difficulty") || "easy";
+        let difficulty = "hard";
         
         let gameEnd = false;
         const gridContainer = document.getElementById('myGrid');
         document.documentElement.style.setProperty("--columns",column);
         document.documentElement.style.setProperty("--rows",row);
+
+        let resetCounter = 0;
 
         //OBJECT SCALING TO FIT SCREEN SIZE//
         const screenWidth = window.innerWidth;
@@ -80,6 +102,8 @@
         const scaleFactor = Math.min(widthRatio, heightRatio);
 
         gridContainer.style.transform = `scale(${scaleFactor*.65})`;
+
+        let isSafe = true;
         //OBJECT SCALING TO FIT SCREEN SIZE//
 
 
@@ -88,7 +112,7 @@
         let counter=0;
         let grid=[];
         let line = [];
-        const mode = localStorage.getItem("mode");
+        const mode = localStorage.getItem("mode") || "gen";
         //let standable=[];
         function isNumeric(value) {
             return /^-?\d+$/.test(value);
@@ -108,10 +132,15 @@
                 line=[];
             }
             grid.push(extra);
-            console.log(grid);
         }
-        function customDigitalGrid(){
-            const customMap = localStorage.getItem("map").split(",");
+        function customDigitalGrid(map = "_"){
+            let customMap = "";
+            if(map == "_"){
+                customMap = localStorage.getItem("map").split(",");
+
+            }else{
+                customMap = map.split(",");
+            }
             ///console.log(customMap)
             row = customMap[0];
             column = customMap[1];
@@ -132,14 +161,15 @@
                 
             }
         }
-        if(mode == "gen"){
-            generateDigitalGrid();
-        }else{
-            //generate digital player board
-            customDigitalGrid();
-        }
-        
-        
+        // if(mode == "gen"){
+        //     generateDigitalGrid();
+        // }else{
+        //     //generate digital player board
+        //     customDigitalGrid();
+        // }
+
+        customDigitalGrid("5,5,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-");
+        let winnable = false;
 
 
         
@@ -172,19 +202,19 @@
         //start by generating start loc
         let rand = Math.floor(Math.random() * 5);
         let coord = [column, rand];
-        if(mode == "gen"){
-            grid[coord[0]][coord[1]] = counter;
-            counter++;
-            while(true){
-                rand = Math.floor(Math.random()*4);
-                //randomly builds in the randomly selected direction 
-                coord = build(coord, rand);
+        // if(mode == "gen"){
+        //     grid[coord[0]][coord[1]] = counter;
+        //     counter++;
+        //     while(true){
+        //         rand = Math.floor(Math.random()*4);
+        //         //randomly builds in the randomly selected direction 
+        //         coord = build(coord, rand);
 
-                if(coord[0] == 1){
-                    break;
-                }
-            }
-        }
+        //         if(coord[0] == 1){
+        //             break;
+        //         }
+        //     }
+        // }
         
 
 
@@ -197,7 +227,7 @@
 
         let r=0;
         let c=0;
-        let timer = 2000 / (column*row);
+        let time = 2000 / (column*row);
         function createSquare(i=0){
             const gridItem = document.createElement('div');
             
@@ -221,39 +251,73 @@
                 return;
             }
             i++;
-            setTimeout(() => createSquare(i), timer);
+            setTimeout(() => createSquare(i), time);
         }
         createSquare();
         
+        
         //GRID CREATION//
+        let currentTXT = 0;
 
         //UPDATES BOTH GRIDS//
         //starting position of the player
         let playerCoords = [row-1, 0];
         let count = -1;
+        let highestReachedPoint = -1;
         function onPath(){
-            if(playerCoords[0] == 0){
+            if(playerCoords[0] == 0 && winnable == true){
+                //check if game won
+                currentTXT++;
+                nextText(currentTXT);
+                restart();
                 
-                gameEnd = true;
-                openMenu();
+                
+                movement = ["true", "true", "true", "true", "true"]
+
             }
             if (grid[playerCoords[0]][playerCoords[1]] != '-'){
                 count++;
 
-                if(grid[playerCoords[0]][playerCoords[1]] != count && grid[playerCoords[0]][playerCoords[1]] != count-2){
+                if(grid[playerCoords[0]][playerCoords[1]] == count-2){
+                    count-=2;//walking backwards for whatever reason 
+                }
+                if(grid[playerCoords[0]][playerCoords[1]] != count){
                     //oopsie stepped on the wrong thing!
+                    isSafe = false;
                     setTimeout(() =>restart(), 200);
+                }
+                if(count>highestReachedPoint){
+                    highestReachedPoint = count;
                 }
             }
         }
         function restart(){
             let square = document.getElementById(`${playerCoords[0]} ${playerCoords[1]}`);
             square.textContent = "";
-
-            square.classList.remove('stand');
+            if(difficulty == "easy" || difficulty == "medium"){
+                if(isNumeric(grid[playerCoords[0]][playerCoords[1]]) == true && grid[playerCoords[0]][playerCoords[1]] <= highestReachedPoint){
+                    if(difficulty == "easy"){
+                        square.textContent = grid[playerCoords[0]][playerCoords[1]];
+                    }
+                    
+                }else{
+                    square.classList.remove('stand');
+                }
+            }else{
+                square.classList.remove('stand');
+            }
+            
             playerCoords = [row-1, 0];
             updateGrid(0,0);
             count= -1;
+            isSafe = true;
+
+            resetCounter+=1;
+            resetText.textContent = `Resets: ${resetCounter}`;
+            if(challenge == 3){
+                gameEnd = true;
+                openMenu("failed");
+            }
         }
         function updateGrid(r,c){
             if(gameEnd == false && menuOpen == false){
@@ -297,10 +361,15 @@
                     onPath();
                     
                 } catch{
-                    console.log(playerCoords[0], playerCoords[1])
-                    console.log(current[0], current[1])
-                    prevSquare.textContent = "O";
-                    console.log("You can't leave the grid!");
+                    try{
+                        console.log(playerCoords[0], playerCoords[1])
+                        console.log(current[0], current[1])
+                        prevSquare.textContent = "O";
+                        console.log("You can't leave the grid!");
+                    }catch{
+                        restart();
+                    }
+                    
                 }
             }
             
@@ -326,7 +395,7 @@
         //menu.style.display = "none";
         menu.style.transform = "translateY(200%)";
         let menuOpen = false
-        function openMenu(){
+        function openMenu(text = "none"){
             if(gameEnd == true){
                 menuHeader.textContent = "Game Won!";
                 resumeTxt.textContent = "Resume";
@@ -341,17 +410,26 @@
                 menuTxt.textContent = "Menu";
             }
 
+            if(text == "failed"){
+                menuHeader.textContent = "Challenge Failed";
+            }
+
             if(menuOpen == false){
+                // console.log("menu open");
                 gridContainer.style.filter = "blur(2px)";
                 menuOpen = true;
                 pauseText.textContent = "Paused";
                 menu.style.transform = "translateY(0)";
+                pauseTimer();
             }else{
                 gridContainer.style.filter = "none";
                 menuOpen = false;
                 pauseText.textContent = "Pause";
                 menu.style.transform = "translateY(200%)";
-                //menu.style.display = "none";
+                if(timerRef.textContent !== "Press WASD to start!" && gameEnd === false){
+                    startTimer();
+                }
+                
 
             }
             
@@ -359,25 +437,94 @@
         //PLAYER MOVEMENT//
        
         const pressedKeys = {};
-
+        let movement = ["true", "true", "true", "true", "true"]
+        //forward, backward, left, right, space
         document.addEventListener('keydown', (event) => {
         if (!pressedKeys[event.key]) {
             pressedKeys[event.key] = true;
                 switch (event.key) {
                         case 'w': // Move up
-                        updateGrid(-1,0)
+                        if (movement[0] == "true"){
+                            if(currentTXT == 10 || currentTXT == 7){
+                                currentTXT++;
+                                movement = ["false", "false", "false", "false", "true"]
+                                nextText(currentTXT);
+
+                            }
+                            if(isSafe == true || hacks == true){
+                                if(challenge != 5){
+                                    updateGrid(-1,0);
+                                }else{
+                                    updateGrid(1,0);
+                                }
+                                
+                            }
+                            
+                            if(menuOpen === false && gameEnd === false){
+                                startTimer();
+                            }
+                        }
+                        
                         break;
                         case 's': // Move down
-                        updateGrid(1,0)
+                        if (movement[1] == "true"){
+                            if(isSafe == true || hacks == true){
+                                if(challenge != 5){
+                                    updateGrid(1,0);
+                                }else{
+                                    updateGrid(-1,0);
+                                }
+                            }
+                            if(menuOpen === false && gameEnd === false){
+                                startTimer();
+                            }
+                        }
+                        
                         break;
                         case 'a': // Move left
-                        updateGrid(0,-1)
+                        if (movement[2] == "true"){
+                            if(isSafe == true || hacks == true){
+                                if(challenge != 5){
+                                    updateGrid(0,-1);
+                                }else{
+                                    updateGrid(0,1);
+                                }
+                            }
+                            if(menuOpen === false && gameEnd === false){
+                                startTimer();
+                            }
+                        }
+                        
                         break;
                         case 'd': // Move right
-                        updateGrid(0,1)
+                        if (movement[3] == "true"){
+                            if(currentTXT == 10){
+                                movement = ["true", "false", "false", "false", "true"]
+                            }
+
+                            if(isSafe == true || hacks == true){
+                                if(challenge != 5){
+                                    updateGrid(0,1);
+                                }else{
+                                    updateGrid(0,-1);
+                                }
+                            }
+                            if(menuOpen === false && gameEnd === false){
+                                startTimer();
+                            }
+                        }
+                        
                         break;
                         case 'Escape':
                         openMenu();
+                        break;
+
+                        case ' ':
+                        if (movement[4] == "true"){
+                            currentTXT++;
+                            nextText(currentTXT);
+                        }
+                        
                         break;
                     }
             
@@ -389,7 +536,6 @@
         delete pressedKeys[event.key];
         });
         //PLAYER MOVEMENT//
-
         pauseText.addEventListener('click', function() {
             openMenu();
             
@@ -398,6 +544,193 @@
             openMenu();
             
         });
+
+
+        //TIMER THING//
+        
+        let [milliseconds, seconds, minutes, hours] = [0, 0, 0, 0];
+        let int = null;
+
+        // document.getElementById("start-timer").addEventListener("click", () => {
+        //     startTimer();
+        // });
+        function startTimer(){
+            if (int !== null) {
+                clearInterval(int);
+            }
+            int = setInterval(displayTimer, 10);
+        }
+
+        function displayTimer() {
+            milliseconds += 10;
+
+            if(milliseconds == 1000){
+                seconds += 1;
+                milliseconds = 0;
+            }
+            if(seconds == 60){
+                minutes+=1;
+                seconds=0;
+            }
+            if(minutes == 60){
+                hours+=1;
+                minutes=0;
+            }
+
+
+            if(challenge == 1){
+                if(seconds >= 30){
+                    gameEnd = true;
+                    openMenu("failed");
+                }
+            }
+
+
+
+
+            let h = String(hours).padStart(2, "0");
+            let m = String(minutes).padStart(2, "0");
+            let s = String(seconds).padStart(2, "0");
+            let ms = String(milliseconds).padStart(3, "0");
+
+            timerRef.innerHTML = `${h} : ${m} : ${s} : ${ms}`;
+        }
+
+        // document.getElementById("pause-timer").addEventListener("click", () => {
+        //     pauseTimer();
+        // });
+        function pauseTimer(){
+            clearInterval(int);
+        }
+        function resetTimer(){
+            clearInterval(int);
+            [milliseconds, seconds, minutes, hours] = [0, 0, 0, 0];
+            timerRef.innerHTML = "00 : 00 : 00 : 000";
+        }
+        // document.getElementById("reset-timer").addEventListener("click", () => {
+        //     resetTimer();
+        // });
+
+
+        //DIALOGUE CONTROL//
+        const exText = document.getElementById("explaining-text");
+        const allMSGS = [
+            "Welcome to Pathfinder's detailed step by step tutorial! (Press space to continue)", //0
+            "You can navigate the game using WASD (Press space to continue)", //1
+            "Currently this map is completely blank. You can't reset, so just explore! (Press space to continue)", //2
+            "Now that you've gotten the hang of movement lets try in a real game! (Press space to continue)",//3
+            "This is what a typical generated map looks like. (Press space to continue)",//4
+            "White squares indicate a safe square. Walk on them as you please! (Press space to continue)",//5
+            "Your goal is to try to reach the the top of the map! (Press space to continue)",//6
+            "Try stepping directly in front of you! (Press w to continue)",//7
+            "You got sent straight back to your original position! (Press space to continue)",//8
+            "So now you know that this square is NOT safe! (Press space to continue)",//9
+            "Lets try the next square! (Press d then w to continue)",//10
+            "Wait! You didn't get sent back to the beginning. (Press space to continue)",//11
+            "It looks like you've found the first square! (Press space to continue)",//12
+            "Try to reach the end! (Reach the top of the map continue)",//13
+            "Congrats! That was the easy difficulty, how about we try something a little trickier... (Press space to continue)",//14
+            "This is the medium difficulty... (Reach the top of the map to continue)",//15
+            "Still too easy? Let's try something even more difficult! (Press space to continue)",//16
+            "This is the hard difficulty... (Reach the end of the map to continue)",//17
+            "Wow! You're a total master! (Press space to continue)",//18
+            "Now, you may have noticed a timer and reset counter to the left of your screen. (Press space to continue)",//19
+            "The timer tracks how fast you can crack a level! (Press space to continue)",//20
+            "And the reset counter tracks how many time you get sent back to the beginning. (Press space to continue)",//21
+            "There are way more things to explore like challenges, the impossible difficulty, and custom made maps. (Press space to continue)",//22
+            "Why don't you give it a try, Pathfinder? (Press space to end)" //23
+        ];
+        nextText(currentTXT);
+
+        function nextText(i=0){
+            exText.textContent = allMSGS[i];
+            if(i == 3){
+                winnable = true;
+                difficulty = "hard";
+                console.log("generating new grid");
+                grid=[]
+                customDigitalGrid("7,5,-,-,-,-,-,*,6,*,*,*,4,5,*,*,*,3,*,*,*,*,2,1,*,*,*,*,0,*,*,*,-,-,-,-,-");
+                console.log(grid)
+
+                r=0;
+                c=0;
+                column = 5;
+                row = 7;
+                time = 2000 / (column*row);
+                
+                gridContainer.replaceChildren();
+                document.documentElement.style.setProperty("--columns",column);
+                document.documentElement.style.setProperty("--rows",row);
+                createSquare();
+
+                movement = ["false", "false", "false", "false", "true"]
+                difficulty = "easy";
+
+            }
+            if(i==7){
+                movement = ["true", "false", "false", "false", "false"]
+
+            }
+            if(i==10){
+                movement = ["false", "false", "false", "true", "false"]
+
+            }
+            if(i==11){
+                movement = ["false", "false", "false", "false", "true"]
+
+            }
+            if(i==13){
+                movement = ["true", "true", "true", "true", "false"]
+
+            }
+
+            if(i==15){
+                difficulty = "medium";
+                console.log("generating new grid");
+                grid=[]
+                customDigitalGrid("7,5,-,-,-,-,-,*,6,*,*,*,4,5,*,*,*,3,*,*,*,*,2,*,*,*,*,1,0,*,*,*,-,-,-,-,-");
+                console.log(grid)
+
+                r=0;
+                c=0;
+                column = 5;
+                row = 7;
+                time = 2000 / (column*row);
+                
+                gridContainer.replaceChildren();
+                document.documentElement.style.setProperty("--columns",column);
+                document.documentElement.style.setProperty("--rows",row);
+                createSquare();
+
+                movement = ["true", "true", "true", "true", "false"];
+            }
+
+            if(i==17){
+                difficulty = "hard";
+                console.log("generating new grid");
+                grid=[]
+                customDigitalGrid("7,5,-,-,-,-,-,*,*,6,*,*,*,*,5,*,*,*,*,4,*,*,*,*,3,2,1,*,*,*,*,0,-,-,-,-,-");
+                console.log(grid)
+
+                r=0;
+                c=0;
+                column = 5;
+                row = 7;
+                time = 2000 / (column*row);
+                
+                gridContainer.replaceChildren();
+                document.documentElement.style.setProperty("--columns",column);
+                document.documentElement.style.setProperty("--rows",row);
+                createSquare();
+
+                movement = ["true", "true", "true", "true", "false"];
+            }
+            
+            if(i==24){
+                window.location.href = "index.html"
+            }
+        }
+        //DIALOGUE CONTROL//
 </script>
         
   </body>

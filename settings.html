@@ -85,7 +85,8 @@
 
         //check if diffulty dropdown has a changed value
         //if it does then it stores it in local storage
-        const challengeText = document.getElementById("challenge-name")
+        const challengeText = document.getElementById("challenge-name");
+        const challengeContainer = document.getElementById("challenge-notifier")
         const difficultyDropdown = document.getElementById("difficulty-selector");
         if(challenge == 0){
           difficultyDropdown.value = localStorage.getItem("difficulty") || "easy";
@@ -95,7 +96,10 @@
           sizeInput.disabled = false;
 
           //restores previous values.
+
+          challengeContainer.style.display = "none";
         }else{
+          challengeContainer.style.display = "block";
           challengeText.textContent = localStorage.getItem("challenge-name");
         }
 
@@ -217,6 +221,10 @@
               mapSelector.disabled = true;
               
 
+            }else if (keys[i] == "time"){
+              localStorage.setItem("time",requirements[keys[i]]);
+            }else{
+              localStorage.setItem("other",requirements[keys[i]]);
             }
              
           }
